@@ -8,7 +8,7 @@
 #include "spinlock.h"
 #include "riscv.h"
 #include "defs.h"
-
+#define PAGESIZE 4096
 void freerange(void *pa_start, void *pa_end);
 
 extern char end[]; // first address after kernel.
@@ -79,4 +79,19 @@ kalloc(void)
   if(r)
     memset((char*)r, 5, PGSIZE); // fill with junk
   return (void*)r;
+}
+
+uint64 getmem(void)
+{
+  uint i = 0;
+  struct run *r;
+  acquire(&kmem.lock);
+  r = kmem.freelist;
+  while (r){
+    r = r->next;
+    i += 1;
+  }
+  release(&kmem.lock);
+  return i*PAGESIZE; //4096 == page size
+  
 }

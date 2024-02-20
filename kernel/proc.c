@@ -98,7 +98,8 @@ allocpid()
   pid = nextpid;
   nextpid = nextpid + 1;
   release(&pid_lock);
-
+  struct usyscall* proc = (struct usyscall*) USYSCALL;
+  proc -> pid = pid;
   return pid;
 }
 

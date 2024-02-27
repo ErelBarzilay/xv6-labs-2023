@@ -121,7 +121,7 @@ sys_pgaccess(void)
       return -1;
     }
     if ((PTE_FLAGS(*pte_p) & PTE_A) != 0) { //if valud
-      *pte_p =*pte_p & ~PTE_A; //change the value in pte_p to invalid
+      *pte_p =*pte_p & ~PTE_A; //turn off the access bit to assume this 
       mask =mask | 1 << i; //put in the mask now the value 1 in the appropriate location
     }
   }

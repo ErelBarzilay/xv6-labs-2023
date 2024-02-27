@@ -1,0 +1,4 @@
+perhaps read, fstat, stat   
+RX, RW, RW, RW, R, RW, RX accordingly
+the most upper 4: the highest one is test, while the other 3 are data and variables
+the lowest 3: usyscall, trapframe, and trampoline, accordingly

@@ -5,7 +5,7 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
-
+#define PTE_A (1L<<6)
 uint64
 sys_exit(void)
 {
@@ -70,14 +70,6 @@ sys_sleep(void)
 }
 
 
-#ifdef LAB_PGTBL
-int
-sys_pgaccess(void)
-{
-  // lab pgtbl: your code here.
-  return 0;
-}
-#endif
 
 uint64
 sys_kill(void)
@@ -99,4 +91,43 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+int
+sys_pgaccess(void)
+{
+  // lab pgtbl: your code here.
+  uint64 va;
+  int pages;
+  uint64 abits;
+  unsigned int mask = 0;
+  struct proc *p = myproc();
+
+  argaddr(0, &va);
+  argint(1, &pages);
+  argaddr(2, &abits);
+
+  /* page number upper limit */
+  if (pages > 32 || pages < 0){
+    return -1;
+  }
+
+  for (int i = 0; i < pages; i++) {
+    pte_t* pte_p = walk(p->pagetable, va + i * PGSIZE, 0);
+    if (*pte_p == 0) {
+      return -1;
+    }
+    if((*pte_p & PTE_V) == 0) {
+      return -1;
+    }
+    if ((PTE_FLAGS(*pte_p) & PTE_A) != 0) { //if valud
+      *pte_p =*pte_p & ~PTE_A; //change the value in pte_p to invalid
+      mask =mask | 1 << i; //put in the mask now the value 1 in the appropriate location
+    }
+  }
+  if (copyout(p->pagetable, abits, (char *)&mask, sizeof(mask)) < 0) { //if fails to copy mask to abits
+    return -1;
+  }
+  
+  return 0;
 }

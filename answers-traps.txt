@@ -1,0 +1,6 @@
+a2 
+the call to f is in the beginning of the function, to g is right after it 
+642
+ 68
+ He110 World, if it is big endian: we would have to change 57616 =00000000000000001110000100010000 to 00000000000000001000011100001000 (i.e., invert the order of the bits in each byte
+the int representation of the 4 bytes above the argument to the functio (3), because the function expectes the next argument to be there 

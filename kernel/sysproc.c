@@ -67,6 +67,7 @@ sys_sleep(void)
     sleep(&ticks, &tickslock);
   }
   release(&tickslock);
+  backtrace();
   return 0;
 }
 
@@ -90,4 +91,23 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+int sys_sigreturn(void){
+  struct proc *proc = myproc();
+  proc->ticks_passed = 0;
+  proc->tag = 0;
+  *proc -> trapframe = *proc -> trapframe_ret;
+  return proc->trapframe->a0; //a0
+}
+
+int sys_sigalarm(void){
+  struct proc *proc = myproc();
+  int ticks;
+  argint(0, &ticks);
+  uint64 handler;
+  argaddr(1, &handler);
+  proc->interval = ticks;
+  proc->handler = handler;
+  return 0;
 }

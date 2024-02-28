@@ -93,7 +93,7 @@ int
 allocpid()
 {
   int pid;
-  
+
   acquire(&pid_lock);
   pid = nextpid;
   nextpid = nextpid + 1;
@@ -119,12 +119,21 @@ allocproc(void)
       release(&p->lock);
     }
   }
+  
   return 0;
 
 found:
   p->pid = allocpid();
   p->state = USED;
-
+  p->interval = 0;
+  p->handler = 0;
+  p->ticks_passed = 0;
+  p->tag = 0;
+  if((p->trapframe_ret = (struct trapframe *)kalloc()) == 0){
+    freeproc(p);
+    release(&p->lock);
+    return 0;
+  }
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
     freeproc(p);
@@ -157,6 +166,9 @@ freeproc(struct proc *p)
 {
   if(p->trapframe)
     kfree((void*)p->trapframe);
+  if(p->trapframe_ret) {
+    kfree((void*)p->trapframe_ret);
+  }
   p->trapframe = 0;
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);
@@ -686,3 +698,4 @@ procdump(void)
     printf("\n");
   }
 }
+
